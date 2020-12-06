@@ -1,0 +1,64 @@
+`timescale 10 us/ 1 ps
+
+module BPSK_vlg_tst();
+
+
+reg CE;
+reg clk;
+reg reset;
+reg tx_enb;
+
+wire [9:0]  sin_out;
+wire [9:0]  tx_out;
+
+BPSK #(
+	.N(8)) DUT( //параметр N д.б больше 8 и кратен 2
+	.CE(CE),
+	.clk(clk),
+	.reset(reset),
+	.sin_out(sin_out),
+	.tx_enb(tx_enb),
+	.tx_out(tx_out)
+	//,.sg_mod(sg_mod)
+);
+
+initial begin                                                  
+	// code that executes only once                        
+	// insert code here --> begin
+		 $display("Running testbench");   	
+		 clk 	 	= 0;
+		 reset 	= 0;
+		 tx_enb 	= 0;
+		 reset 	= 0;
+		 CE 		= 0;
+		 repeat(8) #10 clk = ~clk;
+		 CE 		= 1;
+		 repeat(2) #10 clk = ~clk;
+		 reset 	= 1'b1;
+		 repeat(4) #10 clk = ~clk;
+		 reset 	= 1'b0;
+		 forever #10 clk = ~clk;	  
+	// --> end                                                                 
+end  
+                                                  
+	
+task broadcast;
+    input BR_ENB;
+    begin 
+		@ (posedge clk);
+		tx_enb = BR_ENB;
+	end
+endtask		
+
+ 
+initial  
+begin: TEST_CASE 
+	 #1200    broadcast(1); 
+	 #10200	 broadcast(0);
+	 #10200	 broadcast(1);
+	 #5000	 broadcast(0);
+	 #2000	 broadcast(1);
+end
+
+
+endmodule
